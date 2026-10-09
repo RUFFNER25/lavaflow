@@ -139,7 +139,7 @@ export async function POST(req: Request) {
 
     if (body.sendWhatsApp) {
       try {
-        const base = process.env.APP_URL || "http://localhost:3000";
+        const base = process.env.APP_URL || "http://localhost:3030";
         await notifyReceipt(result.id, `${base}/api/packages/${result.id}/pdf`);
       } catch (err) {
         console.error("[whatsapp enqueue receipt]", err);

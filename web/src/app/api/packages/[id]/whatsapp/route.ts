@@ -20,7 +20,7 @@ export async function POST(
       return jsonError("El cliente no tiene teléfono registrado");
     }
 
-    const base = process.env.APP_URL || "http://localhost:3000";
+    const base = process.env.APP_URL || "http://localhost:3030";
     const msg = await notifyReceipt(
       id,
       `${base}/api/packages/${id}/pdf?key=${process.env.INTERNAL_API_KEY || ""}`

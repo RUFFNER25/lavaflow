@@ -30,7 +30,6 @@ web/public/uploads/logos/*
 
 # Sesión WhatsApp (Baileys) — nunca subir
 whatsapp/auth/
-auth/
 
 # Backups
 backups/*
