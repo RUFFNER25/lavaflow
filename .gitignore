@@ -1,0 +1,17 @@
+node_modules
+.next
+.env
+.env.local
+dist
+auth
+backups/*
+!backups/.gitkeep
+*.log
+.DS_Store
+web/node_modules
+web/data/*.db
+web/data/*.db-*
+whatsapp/node_modules
+whatsapp/auth
+web/.dockerignore
+whatsapp/.dockerignore

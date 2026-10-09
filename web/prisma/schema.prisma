@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  phone     String?
+  address   String?
+  ruc       String?
+  logoUrl   String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users          User[]
+  customers      Customer[]
+  washTypes      WashType[]
+  garmentTypes   GarmentType[]
+  priceRules     PriceRule[]
+  packages       Package[]
+  whatsappConfig WhatsAppConfig?
+  messageQueue   MessageQueue[]
+  auditLogs      AuditLog[]
+  settings       TenantSetting[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  tenantId     String?
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         String    @default("STAFF") // SUPER_ADMIN | OWNER | STAFF
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant    Tenant?    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  packages  Package[]  @relation("CreatedBy")
+  auditLogs AuditLog[]
+
+  @@index([tenantId])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  tenantId  String
+  dni       String
+  fullName  String
+  phone     String?
+  email     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  packages Package[]
+
+  @@unique([tenantId, dni])
+  @@index([tenantId, fullName])
+}
+
+model WashType {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  priceRules PriceRule[]
+  packages   Package[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, active])
+}
+
+model GarmentType {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  priceRules PriceRule[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, active])
+}
+
+model PriceRule {
+  id            String   @id @default(cuid())
+  tenantId      String
+  washTypeId    String
+  garmentTypeId String?
+  pricePerKg    Float
+  minCharge     Float    @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  washType    WashType     @relation(fields: [washTypeId], references: [id], onDelete: Cascade)
+  garmentType GarmentType? @relation(fields: [garmentTypeId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, washTypeId, active])
+}
+
+model Package {
+  id             String    @id @default(cuid())
+  tenantId       String
+  customerId     String
+  createdById    String
+  code           String
+  washTypeId     String
+  weightKg       Float
+  pricePerKg     Float
+  subtotal       Float
+  discount       Float     @default(0)
+  total          Float
+  status         String    @default("RECIBIDO")
+  notes          String?
+  garmentSummary String?
+  readyAt        DateTime?
+  deliveredAt    DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer   Customer           @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  createdBy  User               @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  washType   WashType           @relation(fields: [washTypeId], references: [id], onDelete: Restrict)
+  statusLogs PackageStatusLog[]
+  messages   MessageQueue[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, customerId])
+  @@index([createdAt])
+}
+
+model PackageStatusLog {
+  id         String   @id @default(cuid())
+  packageId  String
+  fromStatus String?
+  toStatus   String
+  note       String?
+  changedBy  String?
+  createdAt  DateTime @default(now())
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId, createdAt])
+}
+
+model WhatsAppConfig {
+  id              String    @id @default(cuid())
+  tenantId        String    @unique
+  sessionName     String
+  connected       Boolean   @default(false)
+  lastConnectedAt DateTime?
+  phoneNumber     String?
+  readyTemplate   String    @default("Hola {{nombre}}, tu ropa (pedido {{codigo}}) ya está lista para recoger en {{lavanderia}}. ¡Te esperamos!")
+  receiptTemplate String    @default("Hola {{nombre}}, adjuntamos el comprobante de tu pedido {{codigo}} por S/ {{total}}. Peso: {{peso}} kg. Gracias por preferir {{lavanderia}}.")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model MessageQueue {
+  id          String    @id @default(cuid())
+  tenantId    String
+  packageId   String?
+  phone       String
+  type        String
+  body        String
+  mediaUrl    String?
+  status      String    @default("PENDING")
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(5)
+  lastError   String?
+  scheduledAt DateTime  @default(now())
+  sentAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  package Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  @@index([status, scheduledAt])
+  @@index([tenantId, createdAt])
+}
+
+model TenantSetting {
+  id        String   @id @default(cuid())
+  tenantId  String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  meta       String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([action, createdAt])
+}

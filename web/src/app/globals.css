@@ -1,0 +1,70 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@500;600;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  --background: #eef6fb;
+  --foreground: #1e3a5f;
+  --brand: #1d7fc7;
+  --brand-soft: #e8f4fc;
+  --accent: #38bdf8;
+  --surface: #ffffff;
+  --muted: #5b7a9a;
+  --line: #d5e8f5;
+  --ring: rgba(56, 189, 248, 0.28);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(900px 480px at 8% -8%, #cfefff 0%, transparent 55%),
+    radial-gradient(800px 420px at 100% 0%, #dbeafe 0%, transparent 50%),
+    radial-gradient(700px 360px at 50% 100%, #e0f2fe 0%, transparent 45%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Textura suave de “ropa limpia / vapor” */
+.app-shell {
+  background: transparent;
+}
+
+.surface-card {
+  background: color-mix(in srgb, white 92%, #e0f2fe);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px -18px rgba(29, 127, 199, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.soft-table thead {
+  color: var(--muted);
+}
+
+.soft-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.soft-table tbody tr:hover {
+  background: rgba(224, 242, 254, 0.55);
+}
+
+/* Evita zoom raro en iOS al enfocar inputs */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
