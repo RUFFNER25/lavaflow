@@ -1,17 +1,53 @@
-node_modules
-.next
+# Dependencias
+node_modules/
+web/node_modules/
+whatsapp/node_modules/
+
+# Next.js
+web/.next/
+web/out/
+
+# Entorno y secretos
 .env
-.env.local
-dist
-auth
-backups/*
-!backups/.gitkeep
-*.log
-.DS_Store
-web/node_modules
+.env.*
+!.env.example
+web/.env
+web/.env.*
+!web/.env.example
+whatsapp/.env
+whatsapp/.env.*
+!whatsapp/.env.example
+
+# Base de datos SQLite
 web/data/*.db
 web/data/*.db-*
-whatsapp/node_modules
-whatsapp/auth
-web/.dockerignore
-whatsapp/.dockerignore
+*.db
+*.db-*
+
+# Logos subidos (se regeneran en el servidor)
+web/public/uploads/logos/*
+!web/public/uploads/logos/.gitkeep
+
+# Sesión WhatsApp (Baileys) — nunca subir
+whatsapp/auth/
+auth/
+
+# Backups
+backups/*
+!backups/.gitkeep
+
+# Logs y sistema
+*.log
+.DS_Store
+dist/
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Docker residual (no usamos)
+**/Dockerfile
+**/.dockerignore
+docker-compose.yml
