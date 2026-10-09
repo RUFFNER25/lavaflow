@@ -55,9 +55,10 @@ export function StatusQuickActions({
     );
   }
 
-  const otherOptions = [
+  // Tras filtrar ENTREGADO/CANCELADO, siempre se puede cancelar desde aquí
+  const otherOptions: PackageStatus[] = [
     ...options.filter((s) => s !== next),
-    ...(status !== "CANCELADO" ? (["CANCELADO"] as PackageStatus[]) : []),
+    "CANCELADO",
   ];
 
   return (
